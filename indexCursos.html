@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8"> <!-- Establece la codificación de caracteres como UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Configura la vista para dispositivos móviles -->
+    <title>Cursos</title> <!-- Título de la página -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"> <!-- Enlaza Bootstrap para estilos -->
+    <style>
+        body {
+            background-color: #000; /* Establece un fondo negro para el cuerpo de la página */
+        }
+        .categoria {
+            margin-top: 20px; /* Añade un margen superior para separar categorías */
+            color: #fff; /* Color del texto de las categorías en blanco */
+        }
+        .card {
+            background-color: #fff; /* Color de fondo de las tarjetas en blanco */
+            color: #000; /* Color del texto dentro de las tarjetas en negro */
+            border-radius: 10px; /* Bordes redondeados en las tarjetas */
+            box-shadow: 0px 0px 10px #000; /* Sombra de las tarjetas */
+            transition: all 0.3s ease-in-out; /* Transición suave para efectos */
+            margin-bottom: 20px; /* Margen inferior entre tarjetas */
+        }
+        .card img {
+            height: 150px; /* Altura de las imágenes en las tarjetas */
+            object-fit: cover; /* Ajusta la imagen para cubrir el espacio */
+            border-top-left-radius: 10px; /* Bordes redondeados en la parte superior izquierda */
+            border-top-right-radius: 10px; /* Bordes redondeados en la parte superior derecha */
+        }
+        .card-body {
+            display: flex; /* Utiliza flexbox para la distribución del contenido */
+            flex-direction: column; /* Organiza el contenido en columnas */
+        }
+        .card-title {
+            font-size: 20px; /* Tamaño de la fuente del título de la tarjeta */
+            font-weight: bold; /* Texto en negrita para el título */
+        }
+        .card-text {
+            font-size: 16px; /* Tamaño de la fuente para la descripción */
+        }
+        .precio {
+            font-size: 22px; /* Tamaño de la fuente para el precio */
+            font-weight: arial; /* Negrita para resaltar el precio */
+            color: #000000; /* Color verde para el precio */
+        }
+        .btn-comprar {
+            margin-top: auto; /* Empuja el botón hacia abajo en la tarjeta */
+            background-color: #28a745; /* Color verde para el botón */
+            color: #fff; /* Color del texto del botón en blanco */
+            transition: background-color 0.3s, transform 0.3s; /* Transiciones para el botón */
+        }
+        .btn-comprar:hover {
+            background-color: #218838; /* Color verde más oscuro al pasar el mouse */
+            transform: scale(1.05); /* Aumenta el tamaño del botón al pasar el mouse */
+        }
+        .card:hover {
+            transform: translateY(-5px); /* Eleva la tarjeta al pasar el mouse */
+            box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.5); /* Sombra más intensa al pasar el mouse */
+        }
+    </style>
+</head>
+<body>
+    <div class="container"> <!-- Contenedor principal -->
+        <div id="contenido"></div> <!-- Contenedor donde se inyectarán las categorías y cursos -->
+    </div>
+
+    <script>
+        function obtenerDatos() { // Función para obtener datos de la API
+            fetch('https://skillnest-cursos-default-rtdb.firebaseio.com/cursos/cursos.json') // Realiza la solicitud a la API
+            .then(response => {
+                if (!response.ok) { // Verifica si la respuesta es exitosa
+                    throw new Error('Network response was not ok'); // Lanza un error si no es exitosa
+                }
+                return response.json(); // Convierte la respuesta a JSON
+            })
+            .then(data => {
+                const categorias = data || []; // Obtiene las categorías o un arreglo vacío si no hay datos
+                const contenido = document.getElementById('contenido'); // Selecciona el contenedor de contenido
+                contenido.innerHTML = ''; // Limpia el contenido anterior
+
+                if (categorias.length === 0) { // Verifica si no hay categorías
+                    console.error('No se encontraron categorías.'); // Muestra un error en la consola
+                    return; // Sale de la función
+                }
+
+                categorias.forEach(categoria => { // Itera sobre cada categoría
+                    const tituloCategoria = document.createElement('h2'); // Crea un nuevo elemento h2
+                    tituloCategoria.classList.add('categoria'); // Añade la clase de estilo
+                    tituloCategoria.textContent = categoria.categoria; // Establece el texto del título
+                    contenido.appendChild(tituloCategoria); // Añade el título al contenedor
+
+                    const cardDeck = document.createElement('div'); // Crea un contenedor para las tarjetas
+                    cardDeck.classList.add('card-deck'); // Añade la clase de estilo para las tarjetas
+
+                    const cursos = categoria.cursos || []; // Obtiene los cursos de la categoría o un arreglo vacío
+                    cursos.forEach(curso => { // Itera sobre cada curso
+                        const card = document.createElement('div'); // Crea un nuevo div para la tarjeta
+                        card.classList.add('card'); // Añade la clase de estilo a la tarjeta
+
+                        // Establece el contenido de la tarjeta
+                        card.innerHTML = `
+                            <img src="${curso.imagen}" alt="${curso.nombre}" class="card-img-top"> <!-- Imagen del curso -->
+                            <div class="card-body"> <!-- Contenedor del cuerpo de la tarjeta -->
+                                <h5 class="card-title">${curso.nombre}</h5> <!-- Título del curso -->
+                                <p class="card-text">${curso.descripcion}</p> <!-- Descripción del curso -->
+                                <p>Duración: ${curso.duracion}</p> <!-- Duración del curso -->
+                                <p class="precio">Valor: $${curso.precio}</p> <!-- Precio del curso -->
+                                <button class="btn btn-comprar">Comprar</button> <!-- Botón de compra -->
+                            </div>
+                        `;
+
+                        cardDeck.appendChild(card); // Añade la tarjeta al contenedor de tarjetas
+                    });
+
+                    contenido.appendChild(cardDeck); // Añade el contenedor de tarjetas al contenido principal
+                });
+            })
+            .catch(error => console.error('Error fetching data:', error)); // Captura y muestra errores en la consola
+        }
+
+        obtenerDatos(); // Llama a la función para obtener los datos al cargar la página
+        setInterval(obtenerDatos, 5000); // Vuelve a llamar a la función cada 5 segundos
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
